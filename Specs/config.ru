@@ -63,7 +63,7 @@ class Site < Renee::Application
           :"Cache-Control" => "must-revalidate",
           :Expires =>(Time.now - 2000).utc.rfc2822
         })
-        body `../build -p`
+        body `../build -p -u`
       end
     end
     path '/specs.js' do

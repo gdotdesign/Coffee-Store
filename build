@@ -33,5 +33,10 @@ unless program.print
     fs.writeFileSync "#{__dirname}/Build/coffee-store-min.js", complied, 'utf-8'
   fs.writeFileSync "#{__dirname}/Build/coffee-store.js", code, 'utf-8'
 else
+  if program.uglify
+    ast = jsp.parse(code) 
+    ast = pro.ast_mangle(ast)
+    ast = pro.ast_squeeze(ast)
+    code = pro.gen_code(ast)
   console.log code
 

@@ -7,7 +7,7 @@ Store = (function() {
       options = {};
     }
     this.prefix = options.prefix || "";
-    ad = parseInt(options.adapter) || this.ADAPTER_BEST;
+    ad = parseInt(options.adapter) || 0;
     a = window;
     indexedDB = 'indexedDB' in a || 'webkitIndexedDB' in a || 'mozIndexedDB' in a;
     requestFileSystem = 'requestFileSystem' in a || 'webkitRequestFileSystem' in a;
@@ -131,7 +131,7 @@ Store.Adapters = {};
 Store.Adapters.LocalStorage = (function() {
   function _Class() {}
   _Class.prototype.init = function(callback) {
-    if (!(this.prefix = "")) {
+    if (this.prefix !== "") {
       this.prefix += "::";
     }
     return callback(this);

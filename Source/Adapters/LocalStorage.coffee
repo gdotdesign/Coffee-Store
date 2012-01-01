@@ -1,6 +1,6 @@
 Store.Adapters.LocalStorage = class
   init: (callback) ->
-    @prefix += "::" unless @prefix = ""
+    @prefix += "::" unless @prefix is ""
     callback @
   get: (key, callback) ->
     try

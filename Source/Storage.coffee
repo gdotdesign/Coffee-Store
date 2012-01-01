@@ -1,7 +1,7 @@
 class Store
   constructor: (options = {})->
     @prefix = options.prefix || ""
-    ad = parseInt(options.adapter) || @ADAPTER_BEST
+    ad = parseInt(options.adapter) || 0
     
     a = window
     indexedDB = 'indexedDB' of a || 'webkitIndexedDB' of a || 'mozIndexedDB' of a
