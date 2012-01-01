@@ -1,26 +1,26 @@
-define 'Store.Adapters.Abstract', "Store.Adapters.XHR", ->
-  class XHRStorageAdapter extends Store.Adapters.Abstract
-    constructor: (prefix,callback) ->
-      # TODO whitout mootools
-      @request = new Request.JSON url: prefix
-      @request.addEvent 'success', (obj) =>
-        if typeof @callback is 'function' then @callback @deserialize(obj) or false
-      @request.addEvent 'failure', =>
-        if typeof @callback is 'function' then @callback false
-      if typeof callback is 'function' then callback.call @, @
-    get: (key, callback) ->
-      unless @request.isRunning()
-        @request.get {key:key}
-        @callback = callback
-    set: (key, value, callback) ->
-      unless @request.isRunning()
-        @request.post {key:key, value: @serialize value}
-        @callback = callback
-    list: (callback) ->
-      unless @request.isRunning()
-        @request.get()
-        @callback = callback
-    remove: (key, callback) ->
-      unless @request.isRunning()
-        @request.delete {key:key}
-        @callback = callback
+Store.Adapters.XHR = class
+  init: (callback) ->
+    # TODO whitout mootools
+    @request = new Request.JSON url: @prefix
+    @request.addEvent 'success', (obj) =>
+      r = if @type is 'get' then @deserialize(obj) else obj
+      @callback r
+    @request.addEvent 'failure', =>
+      @callback false
+    callback @
+  get: (key, callback) ->
+    @type = 'get'
+    @request.get {key:key}
+    @callback = callback
+  set: (key, value, callback) ->
+    @type = 'set'
+    @request.post {key:key, value: @serialize value}
+    @callback = callback
+  list: (callback) ->
+    @type = 'list'
+    @request.get()
+    @callback = callback
+  remove: (key, callback) ->
+    @type = 'remove'
+    @request.delete {key:key}
+    @callback = callback

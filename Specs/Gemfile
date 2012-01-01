@@ -1,0 +1,4 @@
+source :gemcutter
+gem 'renee'
+gem 'haml'
+gem 'coffee-script'

@@ -49,7 +49,6 @@ class Store
     @$chain = []
     @adapter = new adapter()
     @adapter.init.call @, (store) =>
-      console.log 'adapter ready'
       @ready = true
       if typeof options.callback is 'function' then options.callback @
       @callChain()

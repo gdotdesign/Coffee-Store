@@ -1,0 +1,12 @@
+!!! 5
+%html
+  %head
+    %title Coffee-Store Specs
+    %link{:rel => 'stylesheet', :href => "/css/nodeunit.css"}
+    %script{:src => 'https://ajax.googleapis.com/ajax/libs/mootools/1.4.0/mootools-yui-compressed.js'}
+    %script{:src => "/js/nodeunit.js"}
+    %script{:src => "coffee-store.js"}
+    %script{:src => "specs.js"}
+  %body
+    :javascript 
+      nodeunit.run(suites)

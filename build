@@ -1,11 +1,37 @@
 #!/usr/bin/env coffee
-#jsp = require("uglify-js").parser;
-#pro = require("uglify-js").uglify;
+jsp = require("uglify-js").parser;
+pro = require("uglify-js").uglify;
 
 path = require 'path'
 fs = require 'fs'
 util = require 'util'
+Coffee = require('coffee-script')
 
-compile = require('./compiler')
+code = ''
+code += fs.readFileSync "#{__dirname}/Source/Storage.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/Adapters/LocalStorage.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/Adapters/IndexedDB.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/Adapters/WebSQL.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/Adapters/XHR.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/Adapters/FileSystem.coffee", 'UTF-8'
 
-fs.writeFileSync "#{__dirname}/Build/coffee-store.js", compile(), 'utf-8'
+code = Coffee.compile(code, {bare:yes})
+
+
+program = require('commander')
+program.version('0.7.1')
+program.option('-u, --uglify', 'Uglify')
+program.option('-p, --print', 'Print the build')
+program.parse(process.argv)
+
+unless program.print
+  if program.uglify
+    ast = jsp.parse(code) 
+    ast = pro.ast_mangle(ast)
+    ast = pro.ast_squeeze(ast)
+    complied = pro.gen_code(ast)
+    fs.writeFileSync "#{__dirname}/Build/coffee-store-min.js", complied, 'utf-8'
+  fs.writeFileSync "#{__dirname}/Build/coffee-store.js", code, 'utf-8'
+else
+  console.log code
+
