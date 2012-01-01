@@ -1,0 +1,11 @@
+#!/usr/bin/env coffee
+#jsp = require("uglify-js").parser;
+#pro = require("uglify-js").uglify;
+
+path = require 'path'
+fs = require 'fs'
+util = require 'util'
+
+compile = require('./compiler')
+
+fs.writeFileSync "#{__dirname}/Build/coffee-store.js", compile(), 'utf-8'
