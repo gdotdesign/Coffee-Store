@@ -4,7 +4,8 @@ Store.Adapters.WebSQL = class
         @db.transaction (tr) =>
           tr.executeSql statement, args, callback, (tr,err) =>
             callback false
-          , @error
+          , ->
+            callback false
       @db = openDatabase @prefix, '1.0', 'Store', 5 * 1024 * 1024
       @exec "CREATE TABLE IF NOT EXISTS store ( 'key' VARCHAR PRIMARY KEY NOT NULL, 'value' TEXT)", =>
         callback @
@@ -16,8 +17,8 @@ Store.Adapters.WebSQL = class
           ret = false
         callback.call @, ret
     set: (key, value, callback) ->
-      @get key, (v) =>
-        unless v
+      @exec "SELECT * FROM store WHERE key = '#{key}'", (tr,result) =>
+        unless result.rows.length > 0
           @exec "INSERT INTO store (key, value) VALUES ('#{key}','#{@serialize value}')", (tr, result) =>
             if result.rowsAffected is 1
               callback true

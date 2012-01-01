@@ -1,5 +1,5 @@
 @suites = {}
-['ADAPTER_BEST','LOCAL_STORAGE','INDEXED_DB','WEB_SQL','XHR','FILE_SYSTEM'].forEach (adapter) ->
+['LOCAL_STORAGE','INDEXED_DB','WEB_SQL','XHR','FILE_SYSTEM'].forEach (adapter) ->
   store = new Store adapter: Store[adapter], prefix: adapter
   @suites[adapter] = {}
   
@@ -33,4 +33,7 @@
       store.list (data) ->
         test.strictEqual data.length, 0
         test.done()
-
+  @suites[adapter]["#{adapter}: chain test"] = (test) -> 
+      store.set('testKey', 'testData').get('testKey').set('testKey','hello there matey').get('testKey').remove 'testKey', (data) ->
+        test.strictEqual data, true
+        test.done() 

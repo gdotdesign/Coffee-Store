@@ -44,7 +44,12 @@ class Store
     
     ['get','set','remove','list'].forEach (item) =>
         @[item] = ->
-          @call item, Array::slice.call arguments
+          args = Array::slice.call arguments
+          if @running
+            @chain item, args
+          else
+            @call item, args
+          @
     
     @$chain = []
     @adapter = new adapter()
@@ -68,17 +73,22 @@ class Store
       first = @$chain.shift()
       @call first[0], first[1]
   call: (type, args) ->
+    @running = true
     unless @ready
       @chain type, args
     else
       if type is 'set'
         if args.length == 3
           callback = args.pop()
+      else if type is 'list'
+        if args.length == 1
+          callback = args.pop()
       else
         if args.length == 2
           callback = args.pop()
       @adapter[type].apply @, args.concat (data) =>
         if typeof callback is 'function' then callback data
+        @running = false
         @callChain()
         
 Store.ADAPTER_BEST = 0
