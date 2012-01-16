@@ -46,6 +46,12 @@ If no adapter given the best will be chosen for you.
 ```coffeescript
 store = new Store prefix: 'mystore'
 ```
+## Serialization
+By default data will be written in JSON, but you can define your own serialization method:
+
+```coffeescript
+store = new Store { serialize:((data) -> encrypt data), deserialize:((data) -> decrypt data) }
+```
 
 ## Specs
 To run the specs you will need Coffee-Script, Ruby 1.9.3, RubyGems and Bundler installed.

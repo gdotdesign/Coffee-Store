@@ -3,6 +3,9 @@ class Store
     @prefix = options.prefix || ""
     ad = parseInt(options.adapter) || 0
     
+    @$serialize = options.serialize if typeof options.serialize is 'function'
+    @$deserialize = options.deserialize if typeof options.deserialize is 'function'
+    
     a = window
     indexedDB = 'indexedDB' of a || 'webkitIndexedDB' of a || 'mozIndexedDB' of a
     requestFileSystem = 'requestFileSystem' of a || 'webkitRequestFileSystem' of a
@@ -23,7 +26,7 @@ class Store
         else if localStorage
           adapter = Store.Adapters.LocalStorage
         else
-          throw "No supported adapters are found."
+          adapter = Store.Adapters.Memory
       when 1
         throw "IndexedDB not supported" unless indexedDB
         adapter = Store.Adapters.IndexedDB
@@ -63,9 +66,13 @@ class Store
   error: ->
     console.error arguments
   
-  serialize: (obj) ->
+  serialize: (obj) -> 
+    if @$serialize
+      return @$serialize obj
     JSON.stringify obj
   deserialize: (json) ->
+    if @$deserialize
+      return @de$serialize obj
     JSON.parse json 
       
   chain: (type, arguments) ->
