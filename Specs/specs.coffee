@@ -1,6 +1,6 @@
 @suites = {}
 ['LOCAL_STORAGE','INDEXED_DB','WEB_SQL','XHR','FILE_SYSTEM','MEMORY'].forEach (adapter) ->
-  store = new Store adapter: Store[adapter], prefix: adapter
+  store = new CoffeeStore adapter: CoffeeStore[adapter], prefix: adapter
   @suites[adapter] = {}
   
   @suites[adapter]["#{adapter}: should retrun false for no key (get)"] = (test) -> 

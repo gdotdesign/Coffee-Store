@@ -9,12 +9,12 @@ Coffee = require('coffee-script')
 
 code = ''
 code += fs.readFileSync "#{__dirname}/Source/Storage.coffee", 'UTF-8'
-code += fs.readFileSync "#{__dirname}/Source/Adapters/LocalStorage.coffee", 'UTF-8'
-code += fs.readFileSync "#{__dirname}/Source/Adapters/IndexedDB.coffee", 'UTF-8'
-code += fs.readFileSync "#{__dirname}/Source/Adapters/WebSQL.coffee", 'UTF-8'
-code += fs.readFileSync "#{__dirname}/Source/Adapters/XHR.coffee", 'UTF-8'
-code += fs.readFileSync "#{__dirname}/Source/Adapters/FileSystem.coffee", 'UTF-8'
-code += fs.readFileSync "#{__dirname}/Source/Adapters/Memory.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/LocalStorage.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/IndexedDB.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/WebSQL.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/XHR.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/FileSystem.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/Memory.coffee", 'UTF-8'
 
 code = Coffee.compile(code, {bare:yes})
 

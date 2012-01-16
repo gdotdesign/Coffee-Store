@@ -1,52 +1,67 @@
-class Store
+#Class CoffeeStore
+class CoffeeStore
+  #Constructor
+  #
+  #     options = {
+  #       prefix: String
+  #       adapter: Int [0..6]
+  #       serialize: Function
+  #       deserialize: Function
+  #     }
   constructor: (options = {})->
-    @prefix = options.prefix || ""
-    ad = parseInt(options.adapter) || 0
     
+    # Options parsing
+    @prefix = options.prefix or ""
+    ad = parseInt(options.adapter) or 0
+    
+    # Custom Serialization
     @$serialize = options.serialize if typeof options.serialize is 'function'
     @$deserialize = options.deserialize if typeof options.deserialize is 'function'
     
+    # Checking for features
     a = window
-    indexedDB = 'indexedDB' of a || 'webkitIndexedDB' of a || 'mozIndexedDB' of a
-    requestFileSystem = 'requestFileSystem' of a || 'webkitRequestFileSystem' of a
+    indexedDB = 'indexedDB' of a or 'webkitIndexedDB' of a or 'mozIndexedDB' of a
+    requestFileSystem = 'requestFileSystem' of a or 'webkitRequestFileSystem' of a
     websql = 'openDatabase' of a
     localStore = 'localStorage' of a
     xhr = 'XMLHttpRequest' of a
     
-    switch ad
+    # Get Adapter
+    adapter = switch ad
       when 0
         if indexedDB
-          adapter = Store.Adapters.IndexedDB
+          CoffeeStore.Adapters.IndexedDB
         else if openDatabase
-          adapter = Store.Adapters.WebSQL
+          CoffeeStore.Adapters.WebSQL
         else if requestFileSystem
-          adapter = Store.Adapters.FileSystem
+          CoffeeStore.Adapters.FileSystem
         else if xhr
-          adapter = Store.Adapters.XHR
+          CoffeeStore.Adapters.XHR
         else if localStorage
-          adapter = Store.Adapters.LocalStorage
+          CoffeeStore.Adapters.LocalStorage
         else
-          adapter = Store.Adapters.Memory
+          CoffeeStore.Adapters.Memory
       when 1
-        throw "IndexedDB not supported" unless indexedDB
-        adapter = Store.Adapters.IndexedDB
+        throw "IndexedDB not supported!" unless indexedDB
+        CoffeeStore.Adapters.IndexedDB
       when 2
-        throw "WebSQL not supported" unless openDatabase
-        adapter = Store.Adapters.WebSQL
+        throw "WebSQL not supported!" unless openDatabase
+        CoffeeStore.Adapters.WebSQL
       when 3
-        throw "FileSystem not supported" unless requestFileSystem
-        adapter = Store.Adapters.FileSystem
+        throw "FileSystem not supported!" unless requestFileSystem
+        CoffeeStore.Adapters.FileSystem
       when 4
-        throw "LocalStorage not supported" unless localStorage
-        adapter = Store.Adapters.LocalStorage
+        throw "LocalStorage not supported!" unless localStorage
+        CoffeeStore.Adapters.LocalStorage
       when 5
-        throw "Xhr not supported" unless xhr
-        adapter = Store.Adapters.XHR
+        throw "XHR not supported!" unless xhr
+        CoffeeStore.Adapters.XHR
       when 6
-        adapter = Store.Adapters.Memory
+        CoffeeStore.Adapters.Memory
       else
-        throw "Adapter not found"
+        throw "Adapter not found!"
     
+    # Setting up methods
     ['get','set','remove','list'].forEach (item) =>
         @[item] = ->
           args = Array::slice.call arguments
@@ -56,8 +71,13 @@ class Store
             @call item, args
           @
     
+    # Array for chaining
     @$chain = []
+    
+    # Creating the adapter
     @adapter = new adapter()
+    
+    # Calling init
     @adapter.init.call @, (store) =>
       @ready = true
       if typeof options.callback is 'function' then options.callback @
@@ -66,45 +86,47 @@ class Store
   error: ->
     console.error arguments
   
+  # Serialization
   serialize: (obj) -> 
     if @$serialize
       return @$serialize obj
     JSON.stringify obj
   deserialize: (json) ->
     if @$deserialize
-      return @de$serialize obj
+      return @$deserialize obj
     JSON.parse json 
-      
-  chain: (type, arguments) ->
-    @$chain.push [type, arguments]
+  
+  # Chaining    
+  chain: (type, args) ->
+    @$chain.push [type, args]
   callChain: ->
     if @$chain.length > 0
       first = @$chain.shift()
       @call first[0], first[1]
+      
+  # Calling method
   call: (type, args) ->
-    @running = true
+    # Chain method if the adapter isnt ready yet
     unless @ready
       @chain type, args
     else
-      if type is 'set'
-        if args.length == 3
-          callback = args.pop()
-      else if type is 'list'
-        if args.length == 1
-          callback = args.pop()
-      else
-        if args.length == 2
-          callback = args.pop()
+      @running = true
+      # Get callback based on method
+      if (type is 'set' and args.length is 3) or (type is 'list' and args.length is 1) or ((type is 'get' or type is 'remove') and args.length is 2)
+        callback = args.pop()
+      # Call adapter method
       @adapter[type].apply @, args.concat (data) =>
         if typeof callback is 'function' then callback data
         @running = false
+        # When finished call chain
         @callChain()
-        
-Store.ADAPTER_BEST = 0
-Store.INDEXED_DB = 1
-Store.WEB_SQL = 2
-Store.FILE_SYSTEM = 3
-Store.LOCAL_STORAGE = 4
-Store.XHR = 5
-Store.MEMORY = 6
-Store.Adapters = {}
+
+# Adapter integers        
+CoffeeStore.ADAPTER_BEST = 0
+CoffeeStore.INDEXED_DB = 1
+CoffeeStore.WEB_SQL = 2
+CoffeeStore.FILE_SYSTEM = 3
+CoffeeStore.LOCAL_STORAGE = 4
+CoffeeStore.XHR = 5
+CoffeeStore.MEMORY = 6
+CoffeeStore.Adapters = {}
