@@ -1,71 +1,73 @@
-var Store, _keys;
+var CoffeeStore;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty;
-Store = (function() {
-  function Store(options) {
+CoffeeStore = (function() {
+  function CoffeeStore(options) {
     var a, ad, adapter, indexedDB, localStore, requestFileSystem, websql, xhr;
     if (options == null) {
       options = {};
     }
     this.prefix = options.prefix || "";
     ad = parseInt(options.adapter) || 0;
+    if (typeof options.serialize === 'function') {
+      this.$serialize = options.serialize;
+    }
+    if (typeof options.deserialize === 'function') {
+      this.$deserialize = options.deserialize;
+    }
     a = window;
     indexedDB = 'indexedDB' in a || 'webkitIndexedDB' in a || 'mozIndexedDB' in a;
     requestFileSystem = 'requestFileSystem' in a || 'webkitRequestFileSystem' in a;
     websql = 'openDatabase' in a;
     localStore = 'localStorage' in a;
     xhr = 'XMLHttpRequest' in a;
-    switch (ad) {
-      case 0:
-        if (indexedDB) {
-          adapter = Store.Adapters.IndexedDB;
-        } else if (openDatabase) {
-          adapter = Store.Adapters.WebSQL;
-        } else if (requestFileSystem) {
-          adapter = Store.Adapters.FileSystem;
-        } else if (xhr) {
-          adapter = Store.Adapters.XHR;
-        } else if (localStorage) {
-          adapter = Store.Adapters.LocalStorage;
-        } else {
-          throw "No supported adapters are found.";
-        }
-        break;
-      case 1:
-        if (!indexedDB) {
-          throw "IndexedDB not supported";
-        }
-        adapter = Store.Adapters.IndexedDB;
-        break;
-      case 2:
-        if (!openDatabase) {
-          throw "WebSQL not supported";
-        }
-        adapter = Store.Adapters.WebSQL;
-        break;
-      case 3:
-        if (!requestFileSystem) {
-          throw "FileSystem not supported";
-        }
-        adapter = Store.Adapters.FileSystem;
-        break;
-      case 4:
-        if (!localStorage) {
-          throw "LocalStorage not supported";
-        }
-        adapter = Store.Adapters.LocalStorage;
-        break;
-      case 5:
-        if (!xhr) {
-          throw "Xhr not supported";
-        }
-        adapter = Store.Adapters.XHR;
-        break;
-      case 6:
-        adapter = Store.Adapters.Memory;
-        break;
-      default:
-        throw "Adapter not found";
-    }
+    adapter = (function() {
+      switch (ad) {
+        case 0:
+          if (indexedDB) {
+            return CoffeeStore.Adapters.IndexedDB;
+          } else if (openDatabase) {
+            return CoffeeStore.Adapters.WebSQL;
+          } else if (requestFileSystem) {
+            return CoffeeStore.Adapters.FileSystem;
+          } else if (xhr) {
+            return CoffeeStore.Adapters.XHR;
+          } else if (localStorage) {
+            return CoffeeStore.Adapters.LocalStorage;
+          } else {
+            return CoffeeStore.Adapters.Memory;
+          }
+          break;
+        case 1:
+          if (!indexedDB) {
+            throw "IndexedDB not supported!";
+          }
+          return CoffeeStore.Adapters.IndexedDB;
+        case 2:
+          if (!openDatabase) {
+            throw "WebSQL not supported!";
+          }
+          return CoffeeStore.Adapters.WebSQL;
+        case 3:
+          if (!requestFileSystem) {
+            throw "FileSystem not supported!";
+          }
+          return CoffeeStore.Adapters.FileSystem;
+        case 4:
+          if (!localStorage) {
+            throw "LocalStorage not supported!";
+          }
+          return CoffeeStore.Adapters.LocalStorage;
+        case 5:
+          if (!xhr) {
+            throw "XHR not supported!";
+          }
+          return CoffeeStore.Adapters.XHR;
+        case 6:
+          return CoffeeStore.Adapters.Memory;
+        default:
+          throw "Adapter not found!";
+      }
+    })();
     ['get', 'set', 'remove', 'list'].forEach(__bind(function(item) {
       return this[item] = function() {
         var args;
@@ -88,43 +90,39 @@ Store = (function() {
       return this.callChain();
     }, this));
   }
-  Store.prototype.error = function() {
+  CoffeeStore.prototype.error = function() {
     return console.error(arguments);
   };
-  Store.prototype.serialize = function(obj) {
+  CoffeeStore.prototype.serialize = function(obj) {
+    if (this.$serialize) {
+      return this.$serialize(obj);
+    }
     return JSON.stringify(obj);
   };
-  Store.prototype.deserialize = function(json) {
+  CoffeeStore.prototype.deserialize = function(json) {
+    if (this.$deserialize) {
+      return this.$deserialize(obj);
+    }
     return JSON.parse(json);
   };
-  Store.prototype.chain = function(type, arguments) {
-    return this.$chain.push([type, arguments]);
+  CoffeeStore.prototype.chain = function(type, args) {
+    return this.$chain.push([type, args]);
   };
-  Store.prototype.callChain = function() {
+  CoffeeStore.prototype.callChain = function() {
     var first;
     if (this.$chain.length > 0) {
       first = this.$chain.shift();
       return this.call(first[0], first[1]);
     }
   };
-  Store.prototype.call = function(type, args) {
+  CoffeeStore.prototype.call = function(type, args) {
     var callback;
-    this.running = true;
     if (!this.ready) {
       return this.chain(type, args);
     } else {
-      if (type === 'set') {
-        if (args.length === 3) {
-          callback = args.pop();
-        }
-      } else if (type === 'list') {
-        if (args.length === 1) {
-          callback = args.pop();
-        }
-      } else {
-        if (args.length === 2) {
-          callback = args.pop();
-        }
+      this.running = true;
+      if ((type === 'set' && args.length === 3) || (type === 'list' && args.length === 1) || ((type === 'get' || type === 'remove') && args.length === 2)) {
+        callback = args.pop();
       }
       return this.adapter[type].apply(this, args.concat(__bind(function(data) {
         if (typeof callback === 'function') {
@@ -135,17 +133,17 @@ Store = (function() {
       }, this)));
     }
   };
-  return Store;
+  return CoffeeStore;
 })();
-Store.ADAPTER_BEST = 0;
-Store.INDEXED_DB = 1;
-Store.WEB_SQL = 2;
-Store.FILE_SYSTEM = 3;
-Store.LOCAL_STORAGE = 4;
-Store.XHR = 5;
-Store.MEMORY = 6;
-Store.Adapters = {};
-Store.Adapters.LocalStorage = (function() {
+CoffeeStore.ADAPTER_BEST = 0;
+CoffeeStore.INDEXED_DB = 1;
+CoffeeStore.WEB_SQL = 2;
+CoffeeStore.FILE_SYSTEM = 3;
+CoffeeStore.LOCAL_STORAGE = 4;
+CoffeeStore.XHR = 5;
+CoffeeStore.MEMORY = 6;
+CoffeeStore.Adapters = {};
+CoffeeStore.Adapters.LocalStorage = (function() {
   function _Class() {}
   _Class.prototype.init = function(callback) {
     if (this.prefix !== "") {
@@ -207,11 +205,11 @@ Store.Adapters.LocalStorage = (function() {
   };
   return _Class;
 })();
-Store.Adapters.IndexedDB = (function() {
+CoffeeStore.Adapters.IndexedDB = (function() {
   function _Class() {}
   _Class.prototype.init = function(callback) {
     var a, request;
-    this.version = "0.2";
+    this.version = "1.0";
     this.database = 'store';
     a = window;
     a.indexedDB = a.indexedDB || a.webkitIndexedDB || a.mozIndexedDB;
@@ -310,7 +308,7 @@ Store.Adapters.IndexedDB = (function() {
   };
   return _Class;
 })();
-Store.Adapters.WebSQL = (function() {
+CoffeeStore.Adapters.WebSQL = (function() {
   function _Class() {}
   _Class.prototype.init = function(callback) {
     this.exec = function(statement, callback, args) {
@@ -389,7 +387,7 @@ Store.Adapters.WebSQL = (function() {
   };
   return _Class;
 })();
-Store.Adapters.XHR = (function() {
+CoffeeStore.Adapters.XHR = (function() {
   function _Class() {}
   _Class.prototype.init = function(callback) {
     this.request = new Request.JSON({
@@ -434,7 +432,7 @@ Store.Adapters.XHR = (function() {
   };
   return _Class;
 })();
-Store.Adapters.FileSystem = (function() {
+CoffeeStore.Adapters.FileSystem = (function() {
   function _Class() {}
   _Class.prototype.init = function(callback) {
     var rfs;
@@ -517,33 +515,20 @@ Store.Adapters.FileSystem = (function() {
   };
   return _Class;
 })();
-_keys = Object.keys || function(obj) {
-  var key, keys, _results;
-  if (obj !== Object(obj)) {
-    throw new TypeError('Invalid object');
-  }
-  keys = [];
-  _results = [];
-  for (key in obj) {
-    if (!__hasProp.call(obj, key)) continue;
-    _results.push(key);
-  }
-  return _results;
-};
-Store.Adapters.Memory = (function() {
+CoffeeStore.Adapters.Memory = (function() {
   function _Class() {}
   _Class.prototype.init = function(callback) {
     this.store = {};
     return callback(this);
   };
   _Class.prototype.get = function(key, callback) {
-    var ret;
-    try {
-      ret = this.deserialize(this.store[key.toString()]);
-    } catch (error) {
-      this.error(error);
+    var a, ret;
+    if ((a = this.store[key.toString()])) {
+      ret = this.deserialize(a);
+    } else {
+      ret = false;
     }
-    return callback(ret || false);
+    return callback(ret);
   };
   _Class.prototype.set = function(key, value, callback) {
     var ret;
@@ -556,10 +541,19 @@ Store.Adapters.Memory = (function() {
     return callback(ret || false);
   };
   _Class.prototype.list = function(callback) {
-    var ret;
+    var key, ret;
     ret = [];
     try {
-      ret = _keys(this.store);
+      ret = (function() {
+        var _ref, _results;
+        _ref = this.store;
+        _results = [];
+        for (key in _ref) {
+          if (!__hasProp.call(_ref, key)) continue;
+          _results.push(key);
+        }
+        return _results;
+      }).call(this);
     } catch (error) {
       this.error(error);
     }
