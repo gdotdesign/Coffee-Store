@@ -1,0 +1,29 @@
+<!DOCTYPE html>  <html> <head>   <title>XHR.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="FileSystem.html">                 FileSystem.coffee               </a>                                           <a class="source" href="IndexedDB.html">                 IndexedDB.coffee               </a>                                           <a class="source" href="LocalStorage.html">                 LocalStorage.coffee               </a>                                           <a class="source" href="Memory.html">                 Memory.coffee               </a>                                           <a class="source" href="index.html">                 Storage.coffee               </a>                                           <a class="source" href="WebSQL.html">                 WebSQL.coffee               </a>                                           <a class="source" href="XHR.html">                 XHR.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               XHR.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>WILL BE REWORKED</p>
+
+<p><strong>TODO</strong> whitout mootools</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="nv">CoffeeStore.Adapters.XHR = </span><span class="k">class</span>
+  <span class="nv">init: </span><span class="nf">(callback) -&gt;</span>
+    <span class="vi">@request = </span><span class="k">new</span> <span class="nx">Request</span><span class="p">.</span><span class="nx">JSON</span> <span class="nv">url: </span><span class="nx">@prefix</span>
+    <span class="nx">@request</span><span class="p">.</span><span class="nx">addEvent</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="o">=&gt;</span>
+      <span class="nv">r = </span><span class="k">if</span> <span class="nx">@type</span> <span class="o">is</span> <span class="s1">&#39;get&#39;</span> <span class="k">then</span> <span class="nx">@deserialize</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="k">else</span> <span class="nx">obj</span>
+      <span class="nx">@callback</span> <span class="nx">r</span>
+    <span class="nx">@request</span><span class="p">.</span><span class="nx">addEvent</span> <span class="s1">&#39;failure&#39;</span><span class="p">,</span> <span class="o">=&gt;</span>
+      <span class="nx">@callback</span> <span class="kc">false</span>
+    <span class="nx">callback</span> <span class="err">@</span>
+  <span class="nv">get: </span><span class="nf">(key, callback) -&gt;</span>
+    <span class="vi">@type = </span><span class="s1">&#39;get&#39;</span>
+    <span class="nx">@request</span><span class="p">.</span><span class="nx">get</span> <span class="p">{</span><span class="nx">key</span><span class="o">:</span><span class="nx">key</span><span class="p">}</span>
+    <span class="vi">@callback = </span><span class="nx">callback</span>
+  <span class="nv">set: </span><span class="nf">(key, value, callback) -&gt;</span>
+    <span class="vi">@type = </span><span class="s1">&#39;set&#39;</span>
+    <span class="nx">@request</span><span class="p">.</span><span class="nx">post</span> <span class="p">{</span><span class="nx">key</span><span class="o">:</span><span class="nx">key</span><span class="p">,</span> <span class="nv">value: </span><span class="nx">@serialize</span> <span class="nx">value</span><span class="p">}</span>
+    <span class="vi">@callback = </span><span class="nx">callback</span>
+  <span class="nv">list: </span><span class="nf">(callback) -&gt;</span>
+    <span class="vi">@type = </span><span class="s1">&#39;list&#39;</span>
+    <span class="nx">@request</span><span class="p">.</span><span class="nx">get</span><span class="p">()</span>
+    <span class="vi">@callback = </span><span class="nx">callback</span>
+  <span class="nv">remove: </span><span class="nf">(key, callback) -&gt;</span>
+    <span class="vi">@type = </span><span class="s1">&#39;remove&#39;</span>
+    <span class="nx">@request</span><span class="p">.</span><span class="k">delete</span> <span class="p">{</span><span class="nx">key</span><span class="o">:</span><span class="nx">key</span><span class="p">}</span>
+    <span class="vi">@callback = </span><span class="nx">callback</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
