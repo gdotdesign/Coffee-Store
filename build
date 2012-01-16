@@ -14,6 +14,7 @@ code += fs.readFileSync "#{__dirname}/Source/Adapters/IndexedDB.coffee", 'UTF-8'
 code += fs.readFileSync "#{__dirname}/Source/Adapters/WebSQL.coffee", 'UTF-8'
 code += fs.readFileSync "#{__dirname}/Source/Adapters/XHR.coffee", 'UTF-8'
 code += fs.readFileSync "#{__dirname}/Source/Adapters/FileSystem.coffee", 'UTF-8'
+code += fs.readFileSync "#{__dirname}/Source/Adapters/Memory.coffee", 'UTF-8'
 
 code = Coffee.compile(code, {bare:yes})
 

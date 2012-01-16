@@ -39,6 +39,8 @@ class Store
       when 5
         throw "Xhr not supported" unless xhr
         adapter = Store.Adapters.XHR
+      when 6
+        adapter = Store.Adapters.Memory
       else
         throw "Adapter not found"
     
@@ -97,4 +99,5 @@ Store.WEB_SQL = 2
 Store.FILE_SYSTEM = 3
 Store.LOCAL_STORAGE = 4
 Store.XHR = 5
+Store.MEMORY = 6
 Store.Adapters = {}

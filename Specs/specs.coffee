@@ -1,5 +1,5 @@
 @suites = {}
-['LOCAL_STORAGE','INDEXED_DB','WEB_SQL','XHR','FILE_SYSTEM'].forEach (adapter) ->
+['LOCAL_STORAGE','INDEXED_DB','WEB_SQL','XHR','FILE_SYSTEM','MEMORY'].forEach (adapter) ->
   store = new Store adapter: Store[adapter], prefix: adapter
   @suites[adapter] = {}
   

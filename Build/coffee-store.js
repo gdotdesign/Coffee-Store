@@ -1,5 +1,5 @@
-var Store;
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+var Store, _keys;
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty;
 Store = (function() {
   function Store(options) {
     var a, ad, adapter, indexedDB, localStore, requestFileSystem, websql, xhr;
@@ -60,12 +60,22 @@ Store = (function() {
         }
         adapter = Store.Adapters.XHR;
         break;
+      case 6:
+        adapter = Store.Adapters.Memory;
+        break;
       default:
         throw "Adapter not found";
     }
     ['get', 'set', 'remove', 'list'].forEach(__bind(function(item) {
       return this[item] = function() {
-        return this.call(item, Array.prototype.slice.call(arguments));
+        var args;
+        args = Array.prototype.slice.call(arguments);
+        if (this.running) {
+          this.chain(item, args);
+        } else {
+          this.call(item, args);
+        }
+        return this;
       };
     }, this));
     this.$chain = [];
@@ -99,11 +109,16 @@ Store = (function() {
   };
   Store.prototype.call = function(type, args) {
     var callback;
+    this.running = true;
     if (!this.ready) {
       return this.chain(type, args);
     } else {
       if (type === 'set') {
         if (args.length === 3) {
+          callback = args.pop();
+        }
+      } else if (type === 'list') {
+        if (args.length === 1) {
           callback = args.pop();
         }
       } else {
@@ -115,6 +130,7 @@ Store = (function() {
         if (typeof callback === 'function') {
           callback(data);
         }
+        this.running = false;
         return this.callChain();
       }, this)));
     }
@@ -127,6 +143,7 @@ Store.WEB_SQL = 2;
 Store.FILE_SYSTEM = 3;
 Store.LOCAL_STORAGE = 4;
 Store.XHR = 5;
+Store.MEMORY = 6;
 Store.Adapters = {};
 Store.Adapters.LocalStorage = (function() {
   function _Class() {}
@@ -303,7 +320,9 @@ Store.Adapters.WebSQL = (function() {
       return this.db.transaction(__bind(function(tr) {
         return tr.executeSql(statement, args, callback, __bind(function(tr, err) {
           return callback(false);
-        }, this), this.error);
+        }, this), function() {
+          return callback(false);
+        });
       }, this));
     };
     this.db = openDatabase(this.prefix, '1.0', 'Store', 5 * 1024 * 1024);
@@ -323,8 +342,8 @@ Store.Adapters.WebSQL = (function() {
     }, this));
   };
   _Class.prototype.set = function(key, value, callback) {
-    return this.get(key, __bind(function(v) {
-      if (!v) {
+    return this.exec("SELECT * FROM store WHERE key = '" + key + "'", __bind(function(tr, result) {
+      if (!(result.rows.length > 0)) {
         return this.exec("INSERT INTO store (key, value) VALUES ('" + key + "','" + (this.serialize(value)) + "')", __bind(function(tr, result) {
           if (result.rowsAffected === 1) {
             return callback(true);
@@ -495,6 +514,70 @@ Store.Adapters.FileSystem = (function() {
     }, this), function() {
       return callback(false);
     });
+  };
+  return _Class;
+})();
+_keys = Object.keys || function(obj) {
+  var key, keys, _results;
+  if (obj !== Object(obj)) {
+    throw new TypeError('Invalid object');
+  }
+  keys = [];
+  _results = [];
+  for (key in obj) {
+    if (!__hasProp.call(obj, key)) continue;
+    _results.push(key);
+  }
+  return _results;
+};
+Store.Adapters.Memory = (function() {
+  function _Class() {}
+  _Class.prototype.init = function(callback) {
+    this.store = {};
+    return callback(this);
+  };
+  _Class.prototype.get = function(key, callback) {
+    var ret;
+    try {
+      ret = this.deserialize(this.store[key.toString()]);
+    } catch (error) {
+      this.error(error);
+    }
+    return callback(ret || false);
+  };
+  _Class.prototype.set = function(key, value, callback) {
+    var ret;
+    try {
+      this.store[key.toString()] = this.serialize(value);
+      ret = true;
+    } catch (error) {
+      this.error(error);
+    }
+    return callback(ret || false);
+  };
+  _Class.prototype.list = function(callback) {
+    var ret;
+    ret = [];
+    try {
+      ret = _keys(this.store);
+    } catch (error) {
+      this.error(error);
+    }
+    return callback(ret);
+  };
+  _Class.prototype.remove = function(key, callback) {
+    var ret;
+    if (this.store[key.toString()] === void 0) {
+      callback(false);
+      return;
+    }
+    try {
+      delete this.store[key.toString()];
+      ret = true;
+    } catch (error) {
+      this.error(error);
+    }
+    return callback(ret || false);
   };
   return _Class;
 })();
